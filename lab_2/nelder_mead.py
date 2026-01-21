@@ -24,9 +24,8 @@ class NelderMead2D:
 
     def calculate(self, max_iter=100) -> list:
         alpha, gamma, rho, sigma = 1.0, 2.0, 0.5, 0.5
-        iterations = 0
 
-        for _ in range(max_iter):
+        for iter in range(max_iter):
             # Sorting
             func_vals = np.array([self.func(point) for point in self.simplex])
             ordered_p_ids = np.argsort(func_vals)
@@ -69,16 +68,15 @@ class NelderMead2D:
 
                 # Shrink if contracted point is the new worst
                 else:
-                    for i in range(1, len(self.simplex)):
-                        self.simplex[i] = best_p + sigma * (self.simplex[i] - best_p)
+                    for j in range(1, len(self.simplex)):
+                        self.simplex[j] = best_p + sigma * (self.simplex[j] - best_p)
 
-            iterations += 1
             self.simplex_snapshots.append(self.simplex.copy())
 
             # Convergence by standard deviation
             if np.std(func_vals) < 1e-6:
                 print(
-                    f"Function minimum: {self.func(self.simplex[0])}. Simplex points {self.simplex}. Iterations: {iterations}"
+                    f"Function minimum: {self.func(self.simplex[0])}. Simplex points {self.simplex}. Iterations: {iter + 1}"
                 )
                 break
 
