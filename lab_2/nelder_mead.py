@@ -91,7 +91,7 @@ class NelderMead2D:
             self.simplex_snapshots.append(self.simplex.copy())
 
             # Convergence by standard deviation
-            if np.std(vertices_func_vals) < 1e-6:
+            if np.std(vertices_func_vals, ddof=0) < 1e-6:
                 print(
                     f"Function minimum: {self.func(self.simplex[0])}. Simplex points {self.simplex}. Iterations: {iter + 1}"
                 )
