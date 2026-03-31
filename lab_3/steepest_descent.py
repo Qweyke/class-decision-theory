@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import sympy as sp
 
-from visual_tools import visualize_gradient_descent
+from lab_3.visual_tools import visualize_gradient_descent
 
 
 class GradientDescent2D:
