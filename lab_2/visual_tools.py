@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def visualize_nelder_mead(func, snapshots):
+def visualize_nelder_mead(func, snapshots, constraint_func=None):
     fig, ax = plt.subplots(figsize=(8, 8))
 
     x = np.linspace(-2, 2, 100)
@@ -10,6 +10,21 @@ def visualize_nelder_mead(func, snapshots):
     X, Y = np.meshgrid(x, y)
     Z = np.array([[func(np.array([xi, yi])) for xi in x] for yi in y])
     ax.contourf(X, Y, Z, levels=30, cmap="viridis", alpha=0.4)
+
+    if constraint_func is not None:
+        # Вычисляем значения g(x) для всей сетки
+        Z_const = np.array(
+            [[constraint_func(np.array([xi, yi])) for xi in x] for yi in y]
+        )
+
+        # Заливаем область, где g(x) > 0 (штрафная зона)
+        # alpha=0.3 сделает её заметной, но прозрачной
+        ax.contourf(X, Y, Z_const, levels=[0, np.inf], colors="red", alpha=0.2)
+
+        # Рисуем саму линию границы g(x) = 0
+        ax.contour(
+            X, Y, Z_const, levels=[0], colors="red", linewidths=2, linestyles="--"
+        )
 
     # Main simplex
     (line,) = ax.plot([], [], "r-o", lw=2, markersize=5, zorder=10)

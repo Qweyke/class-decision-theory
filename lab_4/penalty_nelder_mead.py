@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 import numpy as np
 from lab_2.visual_tools import visualize_nelder_mead
 
@@ -12,10 +14,6 @@ class NelderMead2D:
         penalty_weight=100.0,
     ):
         self.func = func
-        # Function defining the constraint: g(x) <= 0 is allowed, g(x) > 0 is penalized
-        self.constraint_func = constraint_func
-        # Penalty multiplier to discourage stepping into forbidden zones
-        self.penalty_weight = penalty_weight
 
         # Initial simplex
         self.simplex = np.array(
@@ -29,14 +27,25 @@ class NelderMead2D:
         # Storage for simplex snapshots on every step
         self.simplex_snapshots = [self.simplex.copy()]
 
+        # Function defining the constraint: g(x) <= 0 is allowed, g(x) > 0 is penalized
+        self.constraint_func = constraint_func
+
+        # Penalty multiplier to discourage stepping into forbidden zones
+        self.penalty_weight = penalty_weight
+
     def _get_f_val(self, x):
         """Calculate function value with optional external penalty"""
         f_val = self.func(x)
 
         # Apply penalty if constraint is violated (g(x) > 0)
         if self.constraint_func is not None:
+            # g(x)
             g_val = self.constraint_func(x)
+
+            #  Phi(g) = (max(0, g))^p
             if g_val > 0:
+
+                # P(x, mu) = f(x) + mu * Sum(i=1,m=1)[Phi(g_i(x))]
                 penalty = self.penalty_weight * (g_val**2)
                 # Add quadratic penalty based on the magnitude of violation
                 print(f"Penalty triggered at {x}: {penalty}")  # Temporary debug
@@ -113,6 +122,7 @@ class NelderMead2D:
                         )
 
             self.simplex_snapshots.append(self.simplex.copy())
+            self.penalty_weight *= 1.1
 
             # Convergence by standard deviation of penalized values
             if np.std(vertices_func_vals) < 1e-6:
@@ -131,17 +141,23 @@ def two_vars_function(x: np.array):
 
 # Example constraint: point must be within a certain radius, e.g., x1^2 + x2^2 <= 4
 # We return x1^2 + x2^2 - 4 so that it is > 0 when the constraint is broken
-def my_constraint(x):
-    return x[0] ** 2 + x[1] ** 2 - 4
+def circle_constraint(x):
+    R = 0.3
+    return (x[0] - 0) ** 2 + (x[1] - 0) ** 2 - R**2
 
 
-# def my_constraint(x):
-#     # This makes (0,0) forbidden because -(0+0) + 0.5 = 0.5 (which is > 0)
-#     # The allowed zone is where x1 + x2 > 0.5
-#     return 0.5 - (x[0] + x[1])
+def line_constraint(x):
+    # This makes (0,0) forbidden because -(0+0) + 0.5 = 0.5 (which is > 0)
+    # The allowed zone is where x1 + x2 > 0.5
+    return 0.5 - (x[0] + x[1])
 
+
+constraint = circle_constraint
 
 # Initialize with the constraint function
-nm2d = NelderMead2D(func=two_vars_function, constraint_func=my_constraint)
+nm2d = NelderMead2D(func=two_vars_function, constraint_func=constraint)
 snaps = nm2d.calculate(max_iter=100)
-visualize_nelder_mead(two_vars_function, snaps)
+visualize_nelder_mead(two_vars_function, snaps, constraint_func=constraint)
+
+
+plt.show()
